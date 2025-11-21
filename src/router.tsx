@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { ListPage } from "./pages/list/ListPage";
-import { StatsPage } from "./pages/stats/StatsPage";
+import ListPage from "./pages/list/ListPage";
+import StatsPage from "./pages/stats/StatsPage";
 
 export const AppRouter = () => {
   return (

@@ -1,0 +1,135 @@
+.page {
+  min-height: 100vh;
+  background: #E9E9F1; /* тот самый мягкий серо-лиловый фон */
+  padding: 32px 14px;
+}
+
+/* Центрированный белый контейнер */
+.page__container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 10px 40px rgba(20, 20, 40, 0.06);
+}
+
+/* Заголовок */
+.page__title {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #111;
+}
+
+/* -------- Фильтры (заголовок ты уже выводишь в ListPage) -------- */
+
+.filters {
+  margin-bottom: 12px;
+}
+
+.filters__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2b2b2b;
+  margin-bottom: 8px;
+}
+
+/* -------- Сортировка -------- */
+
+.sorting {
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 0 14px;
+}
+
+.sorting__select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: none;
+  background: #F3F4F8;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.sorting__select:focus {
+  box-shadow: 0 0 0 2px rgba(90, 104, 246, 0.35);
+}
+
+/* -------- Список карточек -------- */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* -------- Пагинация -------- */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.pagination__arrow {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #F3F4F8;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pagination__page {
+  min-width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F3F4F8;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.total {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* -------- Адаптив -------- */
+
+@media (max-width: 900px) {
+  .page__container {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .page__title {
+    font-size: 24px;
+  }
+
+  .sorting {
+    justify-content: stretch;
+  }
+
+  .sorting__select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding: 18px 10px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+}
