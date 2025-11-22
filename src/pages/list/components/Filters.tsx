@@ -23,7 +23,6 @@ function Filters(props: Props) {
         <h3 className={styles.filters__title}>Фильтры:</h3>
 
         <div className={styles.filters__row}>
-          {/* Статус */}
           <select
             className={styles.filters__select}
             value={props.status}
@@ -35,7 +34,6 @@ function Filters(props: Props) {
             <option value="rejected">Отклонено</option>
           </select>
 
-          {/* Категория */}
           <select
             className={styles.filters__select}
             value={props.category}
@@ -47,7 +45,6 @@ function Filters(props: Props) {
             <option value="Авто">Авто</option>
           </select>
 
-          {/* Цена от */}
           <input
             type="number"
             className={styles.filters__input}
@@ -56,7 +53,6 @@ function Filters(props: Props) {
             onChange={(e) => props.onMinPriceChange(e.target.value)}
           />
 
-          {/* Цена до */}
           <input
             type="number"
             className={styles.filters__input}
@@ -65,7 +61,6 @@ function Filters(props: Props) {
             onChange={(e) => props.onMaxPriceChange(e.target.value)}
           />
 
-          {/* Сортировка */}
           <select
             className={styles.filters__select}
             value={props.sort}
@@ -78,7 +73,6 @@ function Filters(props: Props) {
             <option value="priority_desc">Срочные сверху</option>
           </select>
 
-          {/* Поиск */}
           <input
             type="text"
             className={styles.filters__search}

@@ -3,7 +3,7 @@ export type ModerationDecision = "approved" | "rejected" | "rework";
 export type ModerationHistoryItem = {
   id: number;
   moderator: string;
-  dateTime: string; // можно строкой
+  dateTime: string;
   decision: ModerationDecision;
   comment?: string;
   reason?: string;
@@ -25,8 +25,6 @@ export type Ad = {
   createdAt: string;
   priority: "normal" | "urgent";
   status: "pending" | "approved" | "rejected" | "rework";
-
-  // детальные поля
   images: string[];
   description: string;
   specs: { key: string; value: string }[];

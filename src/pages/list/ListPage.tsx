@@ -1,6 +1,6 @@
+import { useAds } from "../../data/AdsContext";
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MOCK_ADS } from "../../data/ads.ts";
 
 import AdCard from "./components/AdCard";
 import Filters from "./components/Filters";
@@ -17,8 +17,7 @@ function ListPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
 
-
-
+  const { ads } = useAds();
   const PAGE_SIZE = 10;
 
   useEffect(() => {
@@ -31,25 +30,21 @@ function ListPage() {
   }
 
   const sortedAds = useMemo(() => {
-    let arr = [...MOCK_ADS];
+    let arr = [...ads];
 
-    // --- поиск по названию ---
     if (search.trim()) {
       const q = search.toLowerCase();
       arr = arr.filter((ad) => ad.title.toLowerCase().includes(q));
     }
 
-    // --- фильтр по статусу ---
     if (statusFilter !== "all") {
       arr = arr.filter((ad) => ad.status === statusFilter);
     }
 
-    // --- фильтр по категории ---
     if (categoryFilter !== "all") {
       arr = arr.filter((ad) => ad.category === categoryFilter);
     }
 
-    // --- фильтр по цене ---
     const min = minPrice ? Number(minPrice) : null;
     const max = maxPrice ? Number(maxPrice) : null;
 
@@ -60,7 +55,6 @@ function ListPage() {
       arr = arr.filter((ad) => ad.price <= max);
     }
 
-    // --- сортировка ---
     switch (sort) {
       case "date_desc":
         arr.sort((a, b) => {

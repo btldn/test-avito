@@ -34,7 +34,6 @@
   outline: none;
 }
 
-/* фикс ширины, чтобы не расползались */
 .filters__select {
   width: 160px;
   cursor: pointer;
@@ -49,14 +48,12 @@
   min-width: 220px;
 }
 
-/* фокус как в твоём калькуляторе */
 .filters__select:focus,
 .filters__input:focus,
 .filters__search:focus {
   box-shadow: 0 0 0 2px rgba(90, 104, 246, 0.35);
 }
 
-/* адаптив */
 @media (max-width: 700px) {
   .filters__select,
   .filters__input {

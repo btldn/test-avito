@@ -1,60 +1,121 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MOCK_ADS } from "../../data/ads"; // общий массив из list
+import { useAds } from "../../data/AdsContext";
 import styles from "./ItemPage.module.css";
 
-function ItemPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+const REJECT_REASONS = [
+  "Запрещённый товар",
+  "Неверная категория",
+  "Некорректное описание",
+  "Проблемы с фото",
+  "Подозрение на мошенничество",
+  "Другое",
+];
 
+function ItemPage() {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const adId = Number(id);
 
-  const ad = useMemo(
-    () => MOCK_ADS.find((item) => item.id === adId),
-    [adId]
+  const { ads, getAdById, moderateAd } = useAds();
+  const ad = getAdById(adId);
+
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectComment, setRejectComment] = useState("");
+  const [error, setError] = useState("");
+
+  const currentIndex = useMemo(
+    () => ads.findIndex((a) => a.id === adId),
+    [ads, adId]
   );
 
-  // если вдруг не нашли
   if (!ad) {
     return (
       <div className={styles.page}>
-        <div className={styles.page__container}>
-          <p className={styles.empty}>Объявление не найдено</p>
-          <button className={styles.backBtn} onClick={() => navigate("/list")}>
-            ← Назад к списку
-          </button>
-        </div>
+        <p>Объявление не найдено</p>
+        <button onClick={() => navigate("/list")}>Назад к списку</button>
       </div>
     );
   }
 
-  // временные плейсхолдеры для тех полей, которых пока нет в MOCK_ADS
-  const images = [
-    "https://placehold.co/640x480?text=Photo+1",
-    "https://placehold.co/640x480?text=Photo+2",
-    "https://placehold.co/640x480?text=Photo+3",
-  ];
+  function getStatusBadge(status: string) {
+    switch (status) {
+      case "approved":
+        return styles.badgeApproved;
+      case "rejected":
+        return styles.badgeRejected;
+      case "rework":
+        return styles.badgeRework;
+      default:
+        return styles.badgePending;
+    }
+  }
 
-  const specs = [
-    { key: "Характеристика 1", value: "Значение" },
-    { key: "Характеристика 2", value: "Значение" },
-    { key: "Характеристика 3", value: "Значение" },
-  ];
 
-  const history = [
-    {
-      id: 1,
-      decision: "На доработку",
-      moderator: "Модератор Анна",
-      dateTime: "18.11.2025 12:10",
-      comment: "Добавьте фото.",
-    },
-  ];
+  function resetRejectForm() {
+    setRejectReason("");
+    setRejectComment("");
+    setError("");
+  }
+
+  function handleApprove() {
+    resetRejectForm();
+    moderateAd(ad.id, {
+      decision: "approved",
+      moderator: "Артём (модератор)",
+    });
+
+    goNext();
+  }
+
+  function handleRework() {
+    resetRejectForm();
+    moderateAd(ad.id, {
+      decision: "rework",
+      moderator: "Артём (модератор)",
+      comment: "Вернули на доработку",
+    });
+
+    goNext();
+  }
+
+  function handleReject() {
+    if (!rejectReason) {
+      setError("Укажи причину отклонения");
+      return;
+    }
+    if (rejectReason === "Другое" && !rejectComment.trim()) {
+      setError("Опиши причину в комментарии");
+      return;
+    }
+
+    setError("");
+
+    moderateAd(ad.id, {
+      decision: "rejected",
+      moderator: "Артём (модератор)",
+      reason: rejectReason,
+      comment: rejectComment.trim() || undefined,
+    });
+
+    goNext();
+  }
+
+  function goPrev() {
+    if (currentIndex > 0) {
+      navigate(`/item/${ads[currentIndex - 1].id}`);
+    }
+  }
+
+  function goNext() {
+    if (currentIndex >= 0 && currentIndex < ads.length - 1) {
+      navigate(`/item/${ads[currentIndex + 1].id}`);
+    }
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.page__container}>
-        {/* ===== Header ===== */}
         <header className={styles.header}>
           <button className={styles.backBtn} onClick={() => navigate("/list")}>
             ← Назад к списку
@@ -74,25 +135,25 @@ function ItemPage() {
           </div>
 
           <div className={styles.badges}>
-            <span className={styles.badge}>
-              {ad.status === "pending" && "На модерации"}
-              {ad.status === "approved" && "Одобрено"}
-              {ad.status === "rejected" && "Отклонено"}
-            </span>
-
             {ad.priority === "urgent" && (
-              <span className={`${styles.badge} ${styles.badgeUrgent}`}>
-                Срочное
-              </span>
+              <span className={styles.badgeUrgent}>Срочно</span>
             )}
+
+            <span className={`${styles.badgeStatus} ${getStatusBadge(ad.status)}`}>
+              {ad.status === "approved"
+                ? "Одобрено"
+                : ad.status === "rejected"
+                ? "Отклонено"
+                : ad.status === "rework"
+                ? "На доработку"
+                : "На модерации"}
+            </span>
           </div>
+
         </header>
 
-        {/* ===== Content ===== */}
         <main className={styles.content}>
-          {/* ===== Left ===== */}
           <div className={styles.left}>
-            {/* Gallery */}
             <section className={styles.section}>
               <h2 className={styles.section__title}>Фотографии</h2>
 
@@ -105,7 +166,6 @@ function ItemPage() {
               </div>
             </section>
 
-            {/* Description */}
             <section className={styles.section}>
               <h2 className={styles.section__title}>Описание</h2>
               <p className={styles.desc}>
@@ -113,7 +173,6 @@ function ItemPage() {
               </p>
             </section>
 
-            {/* Specs */}
             <section className={styles.section}>
               <h2 className={styles.section__title}>Характеристики</h2>
 
@@ -128,9 +187,7 @@ function ItemPage() {
             </section>
           </div>
 
-          {/* ===== Right ===== */}
           <aside className={styles.right}>
-            {/* Seller */}
             <section className={styles.section}>
               <h2 className={styles.section__title}>Продавец</h2>
 
@@ -144,7 +201,6 @@ function ItemPage() {
               </div>
             </section>
 
-            {/* Moderation history */}
             <section className={styles.section}>
               <h2 className={styles.section__title}>История модерации</h2>
 
@@ -174,56 +230,73 @@ function ItemPage() {
               </div>
             </section>
 
-            {/* Actions */}
             <section className={styles.section}>
               <h2 className={styles.section__title}>Действия модератора</h2>
 
               <div className={styles.actions}>
                 <button
-                  className={`${styles.actionBtn} ${styles.actionBtnGreen}`}
+                  className={styles.actions__approve}
+                  onClick={handleApprove}
                 >
                   Одобрить
                 </button>
 
                 <button
-                  className={`${styles.actionBtn} ${styles.actionBtnYellow}`}
+                  className={styles.actions__rework}
+                  onClick={handleRework}
                 >
                   Вернуть на доработку
                 </button>
 
-                <div className={styles.rejectBlock}>
-                  <select className={styles.rejectSelect}>
-                    <option>Причина отклонения...</option>
-                    <option>Запрещённый товар</option>
-                    <option>Неверная категория</option>
-                    <option>Некорректное описание</option>
-                    <option>Проблемы с фото</option>
-                    <option>Подозрение на мошенничество</option>
-                    <option>Другое</option>
-                  </select>
+                <select
+                  className={styles.actions__select}
+                  value={rejectReason}
+                  onChange={(e) => {
+                    setRejectReason(e.target.value);
+                    setError("");
+                    if (e.target.value !== "Другое") setRejectComment("");
+                  }}
+                >
+                  <option value="">Причина отклонения...</option>
+                  {REJECT_REASONS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
 
+                {rejectReason === "Другое" && (
                   <input
-                    className={styles.rejectInput}
+                    className={styles.actions__input}
                     placeholder="Опиши причину"
+                    value={rejectComment}
+                    onChange={(e) => {
+                      setRejectComment(e.target.value);
+                      setError("");
+                    }}
                   />
+                )}
 
-                  <button
-                    className={`${styles.actionBtn} ${styles.actionBtnRed}`}
-                  >
-                    Отклонить
-                  </button>
-                </div>
+                {error && <p className={styles.actions__error}>{error}</p>}
+
+                <button
+                  className={styles.actions__reject}
+                  onClick={handleReject}
+                >
+                  Отклонить
+                </button>
               </div>
             </section>
 
-            {/* Quick nav */}
             <section className={styles.quickNav}>
-              <button className={styles.quickNav__btn}>
-                ← Предыдущее
-              </button>
-              <button className={styles.quickNav__btn}>
-                Следующее →
-              </button>
+              <div className={styles.nav}>
+                <button onClick={goPrev} disabled={currentIndex <= 0}>
+                  ← Предыдущее
+                </button>
+                <button onClick={goNext} disabled={currentIndex >= ads.length - 1}>
+                  Следующее →
+                </button>
+              </div>
             </section>
           </aside>
         </main>
