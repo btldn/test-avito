@@ -4,6 +4,7 @@ type Props = {
   search: string;
   status: string;
   category: string;
+
   minPrice: string;
   maxPrice: string;
   sort: string;
@@ -40,9 +41,12 @@ function Filters(props: Props) {
             onChange={(e) => props.onCategoryChange(e.target.value)}
           >
             <option value="all">Все категории</option>
-            <option value="Электроника">Электроника</option>
-            <option value="Мебель">Мебель</option>
-            <option value="Авто">Авто</option>
+
+            {props.categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
 
           <input

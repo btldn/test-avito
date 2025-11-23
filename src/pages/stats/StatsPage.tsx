@@ -25,8 +25,7 @@ function StatsPage() {
   const now = new Date();
 
   function parseRuDateTime(dt: string) {
-    // у тебя dateTime кладётся через toLocaleString("ru-RU")
-    // обычно это "dd.mm.yyyy, hh:mm:ss"
+
     const [datePart, timePart] = dt.split(",").map((s) => s.trim());
     if (!datePart) return null;
 
@@ -63,36 +62,32 @@ function StatsPage() {
 
   const periodStart = useMemo(getPeriodStart, [period]);
 
-  // Берём "события модерации" из history по всем объявлениям
   const moderationEvents = useMemo(() => {
     const events: {
       adId: number;
       category: string;
-      decision: "approved" | "rejected" | "rework";
+      decision: "approved" | "rejected" | "requestChanges";
       date: Date;
     }[] = [];
 
     ads.forEach((ad) => {
       ad.moderationHistory.forEach((h) => {
-        const d = parseRuDateTime(h.dateTime);
+        const d = parseIso(h.timestamp);   // <-- фикс
         if (!d) return;
-
-        // фильтр по периоду
         if (d < periodStart) return;
 
         events.push({
           adId: ad.id,
           category: ad.category,
-          decision: h.decision,
+          decision: h.action,              // <-- фикс
           date: d,
         });
       });
     });
-
     return events;
   }, [ads, periodStart]);
 
-  // Уникальные объявления, которые вообще модератор трогал в периоде
+
   const moderatedAdIds = useMemo(() => {
     return new Set(moderationEvents.map((e) => e.adId));
   }, [moderationEvents]);
@@ -100,23 +95,34 @@ function StatsPage() {
   const totalModerated = moderatedAdIds.size;
 
   const decisionStats = useMemo(() => {
-    const counts = { approved: 0, rejected: 0, rework: 0 };
+    const counts = { approved: 0, rejected: 0, requestChanges: 0 };
 
     moderationEvents.forEach((e) => {
       counts[e.decision] += 1;
     });
 
     const totalDecisions =
-      counts.approved + counts.rejected + counts.rework;
+      counts.approved + counts.rejected + counts.requestChanges;
 
     const approvedPct = totalDecisions
       ? Math.round((counts.approved / totalDecisions) * 100)
       : 0;
+
     const rejectedPct = totalDecisions
       ? Math.round((counts.rejected / totalDecisions) * 100)
       : 0;
 
-    return { counts, totalDecisions, approvedPct, rejectedPct };
+    const requestChangesPct = totalDecisions
+      ? Math.round((counts.requestChanges / totalDecisions) * 100)
+      : 0;
+
+    return {
+      counts,
+      totalDecisions,
+      approvedPct,
+      rejectedPct,
+      requestChangesPct,
+    };
   }, [moderationEvents]);
 
   // Среднее время проверки одного объявления
@@ -177,7 +183,7 @@ function StatsPage() {
     return [
       { name: "Одобрено", value: counts.approved },
       { name: "Отклонено", value: counts.rejected },
-      { name: "На доработку", value: counts.rework },
+      { name: "На доработку", value: counts.requestChanges },
     ];
   }, [decisionStats]);
 
@@ -193,7 +199,12 @@ function StatsPage() {
     }));
   }, [moderationEvents]);
 
-  const COLORS = ["#22c55e", "#ef4444", "#f59e0b"]; // можно вынести в css, но так проще
+  const COLORS = ["#22c55e", "#ef4444", "#f59e0b"];
+
+  function parseIso(dt: string) {
+    const d = new Date(dt);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
 
   return (
     <div className={styles.page}>

@@ -16,14 +16,12 @@ function ListPage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
-
-  const { ads } = useAds();
+  const { ads, isLoading, error } = useAds();
   const PAGE_SIZE = 10;
 
   useEffect(() => {
     setPage(1);
   }, [search, statusFilter, categoryFilter, minPrice, maxPrice, sort]);
-
 
   function openDetails(id: number) {
     navigate(`/item/${id}`);
@@ -95,7 +93,7 @@ function ListPage() {
     }
 
     return arr;
-  }, [search, statusFilter, categoryFilter, minPrice, maxPrice, sort]);
+  }, [ads, search, statusFilter, categoryFilter, minPrice, maxPrice, sort]);
 
   const totalPages = Math.max(1, Math.ceil(sortedAds.length / PAGE_SIZE));
 
@@ -103,6 +101,12 @@ function ListPage() {
     const start = (page - 1) * PAGE_SIZE;
     return sortedAds.slice(start, start + PAGE_SIZE);
   }, [sortedAds, page]);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    ads.forEach(ad => set.add(ad.category));
+    return Array.from(set);
+  }, [ads]);
 
 
   return (
@@ -115,6 +119,7 @@ function ListPage() {
             search={search}
             status={statusFilter}
             category={categoryFilter}
+            categories={categories}
             minPrice={minPrice}
             maxPrice={maxPrice}
             sort={sort}
@@ -128,6 +133,9 @@ function ListPage() {
           />
         </div>
 
+        {error && <p className={styles.error}>{error}</p>}
+        {isLoading && <p className={styles.loading}>Загрузка...</p>}
+
         <div className={styles.list}>
           {pageAds.map((ad) => (
             <AdCard
@@ -136,7 +144,7 @@ function ListPage() {
               title={ad.title}
               price={ad.price}
               category={ad.category}
-              date={ad.date}
+              createdAt={ad.createdAt}
               onOpen={openDetails}
             />
           ))}

@@ -44,7 +44,7 @@ function ItemPage() {
         return styles.badgeApproved;
       case "rejected":
         return styles.badgeRejected;
-      case "rework":
+      case "requestChanges":
         return styles.badgeRework;
       default:
         return styles.badgePending;
@@ -58,28 +58,26 @@ function ItemPage() {
     setError("");
   }
 
-  function handleApprove() {
+  async function handleApprove() {
     resetRejectForm();
-    moderateAd(ad.id, {
+    await moderateAd(ad.id, {
       decision: "approved",
       moderator: "Артём (модератор)",
     });
-
     goNext();
   }
 
-  function handleRework() {
+  async function handleRework() {
     resetRejectForm();
-    moderateAd(ad.id, {
-      decision: "rework",
+    await moderateAd(ad.id, {
+      decision: "requestChanges",
       moderator: "Артём (модератор)",
       comment: "Вернули на доработку",
     });
-
     goNext();
   }
 
-  function handleReject() {
+  async function handleReject() {
     if (!rejectReason) {
       setError("Укажи причину отклонения");
       return;
@@ -91,7 +89,7 @@ function ItemPage() {
 
     setError("");
 
-    moderateAd(ad.id, {
+    await moderateAd(ad.id, {
       decision: "rejected",
       moderator: "Артём (модератор)",
       reason: rejectReason,
@@ -113,6 +111,18 @@ function ItemPage() {
     }
   }
 
+  function formatDateTime(iso: string) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.page__container}>
@@ -129,7 +139,7 @@ function ItemPage() {
                 {ad.price.toLocaleString()} ₽
               </span>
               <span className={styles.category}>
-                {ad.category} • {ad.date}
+                {ad.category} • {formatDateTime(ad.createdAt)}
               </span>
             </div>
           </div>
@@ -144,7 +154,7 @@ function ItemPage() {
                 ? "Одобрено"
                 : ad.status === "rejected"
                 ? "Отклонено"
-                : ad.status === "rework"
+                : ad.status === "requestChanges"
                 ? "На доработку"
                 : "На модерации"}
             </span>
@@ -177,10 +187,10 @@ function ItemPage() {
               <h2 className={styles.section__title}>Характеристики</h2>
 
               <div className={styles.specs}>
-                {ad.specs.map((s) => (
-                  <div key={s.key} className={styles.specRow}>
-                    <span className={styles.specKey}>{s.key}</span>
-                    <span className={styles.specVal}>{s.value}</span>
+                {Object.entries(ad.characteristics).map(([key, value]) => (
+                  <div key={key} className={styles.specRow}>
+                    <span className={styles.specKey}>{key}</span>
+                    <span className={styles.specVal}>{value}</span>
                   </div>
                 ))}
               </div>
@@ -194,9 +204,9 @@ function ItemPage() {
               <div className={styles.seller}>
                 <p className={styles.seller__name}>{ad.seller.name}</p>
                 <p className={styles.seller__row}>Рейтинг: {ad.seller.rating}</p>
-                <p className={styles.seller__row}>Объявлений: {ad.seller.adsCount}</p>
+                <p className={styles.seller__row}>Объявлений: {ad.seller.totalAds}</p>
                 <p className={styles.seller__row}>
-                  На платформе с {ad.seller.registeredAt}
+                  На платформе с {formatDateTime(ad.seller.registeredAt)}
                 </p>
               </div>
             </section>
@@ -212,12 +222,12 @@ function ItemPage() {
                 {ad.moderationHistory.map((h) => (
                   <div key={h.id} className={styles.historyItem}>
                     <p className={styles.historyItem__title}>
-                      {h.decision === "approved" && "Одобрено"}
-                      {h.decision === "rejected" && "Отклонено"}
-                      {h.decision === "rework" && "На доработку"}
+                      {h.action === "approved" && "Одобрено"}
+                      {h.action === "rejected" && "Отклонено"}
+                      {h.action === "requestChanges" && "На доработку"}
                     </p>
                     <p className={styles.historyItem__meta}>
-                      {h.moderator} • {h.dateTime}
+                      {h.moderatorName} • {formatDateTime(h.timestamp)}
                     </p>
                     {h.comment && (
                       <p className={styles.historyItem__comment}>{h.comment}</p>

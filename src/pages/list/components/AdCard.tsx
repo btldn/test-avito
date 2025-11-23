@@ -5,11 +5,25 @@ type AdProps = {
   title: string;
   price: number;
   category: string;
-  date: string;
+  createdAt: string;
   onOpen: (id: number) => void;
 };
 
+
 function AdCard(props: AdProps) {
+
+  function formatDateTime(iso: string) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   return (
     <div className={styles.card} onClick={() => props.onOpen(props.id)}>
       <div className={styles.card__image}></div>
@@ -20,7 +34,7 @@ function AdCard(props: AdProps) {
           {props.price.toLocaleString()} ₽
         </p>
         <p className={styles.card__category}>
-          {props.category} • {props.date}
+          {props.category} • {formatDateTime(props.createdAt)}
         </p>
       </div>
 
