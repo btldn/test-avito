@@ -1,73 +1,107 @@
-# React + TypeScript + Vite
+# Система модерации объявлений
+Frontend trainee assignment (Autumn 2025)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Описание проекта
+Проект представляет собой веб-интерфейс для модерации пользовательских объявлений.  
+Модератор может просматривать объявления, фильтровать их, изучать детали, принимать решения  
+(одобрить, отклонить, вернуть на доработку) и просматривать историю модерации.
 
-Currently, two official plugins are available:
+Приложение работает с API из папки `server` тестового задания и реализовано на React + TypeScript.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## Основные возможности
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Список объявлений
+- Пагинация
+- Фильтрация по статусу, категории и диапазону цен
+- Поиск по названию
+- Сортировка по дате, цене и приоритету
+- Отображение карточек с данными объявления
 
-## Expanding the ESLint configuration
+### Детальная страница
+- Галерея изображений
+- Полное описание и характеристики
+- Информация о продавце
+- История модерации
+- Действия модератора: одобрить, отклонить, вернуть на доработку
+- Поддержка шаблонов причин отклонения
+- Быстрая навигация между объявлениями
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Статистика
+- Основные показатели модерации
+- Графики активности за период
+- Распределение решений по категориям
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Используемые технологии
+- React 18
+- TypeScript
+- react-router-dom v6
+- Context API
+- CSS Modules
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## Структура проекта
 ```
+src/
+App.tsx - Каркас приложения и навигация по основным разделам
+main.tsx - Точка входа, подключение BrowserRouter и AdsProvider
+router.tsx - Определение маршрутов /list, /item/:id, /stats
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+data/
+AdsContext.tsx - Хранилище объявлений, функции получения и модерации
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+pages/
+list/ - Страница списка объявлений
+item/ - Детальная страница объявления и действия модератора
+stats/ - Страница статистики
+styles/ - CSS-модули и глобальные стили
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+---
+
+## Установка проекта
+```
+npm install
+```
+### Запуск проекта фронтенд
+```
+npm run dev
+```
+### API-сервер.
+```
+cd server
+npm install
+npm start
+```
+### После запуска фронтенд доступен по адресу:
+
+http://localhost:5173
+
+---
+## Обоснование выбора технологий
+
+
+- **React + TypeScript.** Используются, потому что это базовое требование задания. TypeScript обеспечивает строгую типизацию, повышает стабильность проекта и делает архитектуру более прозрачной. Стек React + TS — стандартный и наиболее уместный вариант для подобных приложений.
+
+- **React Router v6.** Необходим для реализации структуры навигации между страницами `/list`, `/item/:id` и `/stats`. Позволяет чётко разделить интерфейс на независимые маршруты без усложнения архитектуры.
+
+- **Context API.** Выбран вместо Redux, потому что для такого масштаба приложение достаточно проще по состоянию. Redux - слишком тяжёлое решение, к тому же мой опыт с ним ограничен, а с Context API я работаю гораздо увереннее. Для задач хранения списка объявлений и модерации он полностью покрывает требования.
+
+- **CSS Modules.** Использованы как базовый, чистый и предсказуемый способ стилизации. Дополнительные фреймворки (Bootstrap, Tailwind) здесь избыточны, так как проект небольшой и не требует масштабной UI-системы. SCSS/SASS мне знакомы, но в небольших pet-проектах не использую, так как CSS-модули закрывают все нужные задачи.
+
+---
+## Как работать с проектом
+
+- Запустить API-сервер.
+- Запустить фронтенд.
+- Перейти на /list для просмотра объявлений.
+- Нажать на карточку объявления, чтобы открыть страницу модерации.
+- Использовать доступные действия:
+  - Одобрить
+  - Вернуть на доработку
+  - Отклонить с указанием причины
+  - Использовать переходы «предыдущее / следующее» для последовательной модерации.
